@@ -177,9 +177,9 @@ int main(int argc, char** argv) {
   if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one "rtsp://" URL at the end
   // Make sure that the remaining arguments appear to be "rtsp://" URLs:
   int i;
-  for (i = 1; i < argc; ++i) {
-    if (strncmp(argv[i], "rtsp://", 7) != 0) usage();
-  }
+  // for (i = 1; i < argc; ++i) {
+  //   if (strncmp(argv[i], "rtsp://", 7) != 0) usage();
+  // }
   // Do some additional checking for invalid command-line argument combinations:
   if (authDBForREGISTER != NULL && !proxyREGISTERRequests) {
     *env << "The '-U <username> <password>' option can be used only with -R\n";
@@ -242,7 +242,7 @@ int main(int argc, char** argv) {
     *env << "RTSP stream, proxying the stream \"" << proxiedStreamURL << "\"\n";
     *env << "\tPlay this stream using the URL: " << proxyStreamURL << "\n";
     delete[] proxyStreamURL;
-    i ++;
+    i++;
   }
 
   if (proxyREGISTERRequests) {
