@@ -53,7 +53,7 @@ void usage() {
        << " [-u <username> <password>]"
        << " [-R] [-U <username-for-REGISTER> <password-for-REGISTER>]"
        << " [-D <max-inter-packet-gap-time>]"
-       << " <rtsp-url-1> ... <rtsp-url-n>\n";
+       << " <rtsp-url-1> <stream-name-1> ... <rtsp-url-n> <stream-name-n>\n";
   exit(1);
 }
 
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
     case 'T': {
       // stream RTP and RTCP over a HTTP connection
       if (argc > 2 && argv[2][0] != '-') {
-	// The next argument is the HTTP server port number:                                                                       
+	// The next argument is the HTTP server port number:
 	if (sscanf(argv[2], "%hu", &tunnelOverHTTPPortNum) == 1
 	    && tunnelOverHTTPPortNum > 0) {
 	  ++argv; --argc;
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
     }
 
     case 'p': {
-      // specify a rtsp server port number 
+      // specify a rtsp server port number
       if (argc > 2 && argv[2][0] != '-') {
         // The next argument is the rtsp server port number:
         if (sscanf(argv[2], "%hu", &rtspServerPortNum) == 1
@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
       usage();
       break;
     }
-    
+
     case 'u': { // specify a username and password (to be used if the 'back end' (i.e., proxied) stream requires authentication)
       if (argc < 4) usage(); // there's no argv[3] (for the "password")
       username = argv[2];
@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
 
     ++argv; --argc;
   }
-  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one "rtsp://" URL at the end 
+  if (argc < 2 && !proxyREGISTERRequests) usage(); // there must be at least one "rtsp://" URL at the end
   // Make sure that the remaining arguments appear to be "rtsp://" URLs:
   int i;
   for (i = 1; i < argc; ++i) {
@@ -226,13 +226,12 @@ int main(int argc, char** argv) {
 
   // Create a proxy for each "rtsp://" URL specified on the command line:
   for (i = 1; i < argc; ++i) {
-    char const* proxiedStreamURL = argv[i];
-    char streamName[30];
-    if (argc == 2) {
-      sprintf(streamName, "%s", "proxyStream"); // there's just one stream; give it this name
-    } else {
-      sprintf(streamName, "proxyStream-%d", i); // there's more than one stream; distinguish them by name
+    if (i + 1 >= argc){
+      *env << "Missing name for stream" << env->getResultMsg() << "\n";
+      exit(1);
     }
+    char const* proxiedStreamURL = argv[i];
+    char const* streamName = argv[i+1];
     ServerMediaSession* sms
       = ProxyServerMediaSession::createNew(*env, rtspServer,
 					   proxiedStreamURL, streamName,
@@ -243,6 +242,7 @@ int main(int argc, char** argv) {
     *env << "RTSP stream, proxying the stream \"" << proxiedStreamURL << "\"\n";
     *env << "\tPlay this stream using the URL: " << proxyStreamURL << "\n";
     delete[] proxyStreamURL;
+    i ++;
   }
 
   if (proxyREGISTERRequests) {
